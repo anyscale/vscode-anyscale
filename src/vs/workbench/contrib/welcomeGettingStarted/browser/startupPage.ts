@@ -142,9 +142,16 @@ export class StartupPageRunnerContribution implements IWorkbenchContribution {
 					await this.openGettingStarted();
 				} else if (startupEditorSetting.value === 'terminal') {
 					this.commandService.executeCommand(TerminalCommandId.CreateTerminalEditor);
+				} else if (startupEditorSetting.value === 'jupyterNotebook') {
+					await this.openJupyterNotebookReadme();
+					await this.toggleTerminal();
 				}
 			}
 		}
+	}
+
+	private toggleTerminal() {
+		return this.commandService.executeCommand('workbench.action.terminal.toggleTerminal');
 	}
 
 	private tryOpenWalkthroughForFolder(): boolean {
@@ -195,6 +202,28 @@ export class StartupPageRunnerContribution implements IWorkbenchContribution {
 		}
 	}
 
+	private async openJupyterNotebookReadme() {
+		const notebooks = arrays.coalesce(
+			await Promise.all(this.contextService.getWorkspace().folders.map(
+				async folder => {
+					const folderUri = folder.uri;
+					const folderStat = await this.fileService.resolve(folderUri).catch(onUnexpectedError);
+					const files = folderStat?.children ? folderStat.children.map(child => child.name).sort() : [];
+					const file = files.find(file => file.toLowerCase() === 'readme.ipynb');
+					if (file) { return joinPath(folderUri, file); }
+					else { return undefined; }
+				})));
+		if (!this.editorService.activeEditor) {
+			if (notebooks.length) {
+				// pretty hacky but we want to make sure the extension is up, wait 5 seconds.
+				// VSCode does not expose extension activation information here but 5 seconds was enough in all manual testing.
+				// We can readjust if this shows up in usage.
+				await new Promise<void>(resolve => { setTimeout(resolve, 5 * 1000); });
+				await this.commandService.executeCommand('_workbench.openWith', notebooks[0], 'jupyter-notebook');
+			}
+		}
+	}
+
 	private async openGettingStarted(showTelemetryNotice?: boolean) {
 		const startupEditorTypeID = gettingStartedInputTypeId;
 		const editor = this.editorService.activeEditor;
@@ -230,5 +259,6 @@ function isStartupPageEnabled(configurationService: IConfigurationService, conte
 	return startupEditor.value === 'welcomePage'
 		|| startupEditor.value === 'readme' && (startupEditor.userValue === 'readme' || startupEditor.defaultValue === 'readme')
 		|| (contextService.getWorkbenchState() === WorkbenchState.EMPTY && startupEditor.value === 'welcomePageInEmptyWorkbench')
-		|| startupEditor.value === 'terminal';
+		|| startupEditor.value === 'terminal'
+		|| startupEditor.value === 'jupyterNotebook';
 }

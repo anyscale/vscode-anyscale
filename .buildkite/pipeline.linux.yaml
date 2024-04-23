@@ -1,0 +1,35 @@
+steps:
+  - group: "build ubuntu"
+    name: "build"
+    steps:
+      - commands:
+          - ./.anyscale/setup-ubuntu.sh
+          - ./.anyscale/install-node.sh
+          - ./.anyscale/install-aws-cli.sh
+          - ./.anyscale/build-anyscale-server.sh
+        name: build ubuntu
+        plugins:
+          - docker#v5.11.0:
+              environment:
+                - "BUILDKITE_BRANCH"
+                - "BUILDKITE_COMMIT"
+                - "BUILD_ARCH=ubuntu"
+              image: "ubuntu:20.04"
+              mount-buildkite-agent: true
+  - group: "build redhat"
+    name: "build"
+    steps:
+      - commands:
+          - ./.anyscale/setup-redhat.sh
+          - ./.anyscale/install-node.sh
+          - ./.anyscale/install-aws-cli.sh
+          - ./.anyscale/build-anyscale-server.sh
+        name: build redhat
+        plugins:
+          - docker#v5.11.0:
+              environment:
+                - "BUILDKITE_BRANCH"
+                - "BUILDKITE_COMMIT"
+                - "BUILD_ARCH=ubi8"
+              image: "registry.access.redhat.com/ubi8/ubi:8.9-1160"
+              mount-buildkite-agent: true
