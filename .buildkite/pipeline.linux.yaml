@@ -7,9 +7,14 @@ steps:
           - ./.anyscale/install-node.sh
           - ./.anyscale/install-aws-cli.sh
           - ./.anyscale/build-anyscale-server.sh
+        env:
+          AWS_ASSUME_ROLE_ARN: arn:aws:iam::830883877497:role/buildkite-dataplane-builder
+          BUILDKITE_PLUGIN_AWS_ASSUME_ROLE_DURATION: "10800"
         name: build ubuntu
         plugins:
+          - cultureamp/aws-assume-role#v0.2.0
           - docker#v5.11.0:
+              propagate-aws-auth-tokens: true
               environment:
                 - "BUILDKITE_BRANCH"
                 - "BUILDKITE_COMMIT"
@@ -25,8 +30,13 @@ steps:
           - ./.anyscale/install-aws-cli.sh
           - ./.anyscale/build-anyscale-server.sh
         name: build redhat
+        env:
+          AWS_ASSUME_ROLE_ARN: arn:aws:iam::830883877497:role/buildkite-dataplane-builder
+          BUILDKITE_PLUGIN_AWS_ASSUME_ROLE_DURATION: "10800"
         plugins:
+          - cultureamp/aws-assume-role#v0.2.0
           - docker#v5.11.0:
+              propagate-aws-auth-tokens: true
               environment:
                 - "BUILDKITE_BRANCH"
                 - "BUILDKITE_COMMIT"

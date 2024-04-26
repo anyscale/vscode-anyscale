@@ -19,7 +19,7 @@ input=$SCRIPT_DIR/../dist/vscode-server-anyscale.tar.zst
 tar -I zstd -cf $input $SCRIPT_DIR/../../vscode-reh-web-linux-x64
 echo "tar created successfully in $input"
 
-output=s3://bk-premerge-first-jawfish-artifacts/anyscale-vscode-releases/${BUILDKITE_BRANCH}/${BUILDKITE_COMMIT}/${BUILD_ARCH}/vscode-server-anyscale.tar.zst
+output=s3://anyscale-dev-imports/anyscale-vscode-releases/${BUILDKITE_BRANCH}/${BUILDKITE_COMMIT}/${BUILD_ARCH}/vscode-server-anyscale.tar.zst
 aws s3 cp $input $output
 echo "copied to s3"
 echo $output
